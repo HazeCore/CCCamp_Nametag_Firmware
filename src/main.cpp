@@ -1,85 +1,160 @@
-// NeoPixel Ring simple sketch (c) 2013 Shae Erisson
-// released under the GPLv3 license to match the rest of the AdaFruit NeoPixel library
-
-#if (F_CPU>7370000) //neopixel library required 7.37MHz minimum clock speed; this line is used to skip this sketch in internal testing. It is not needed in your sketches.
-
-// #include <tinyNeoPixel.h>
 #include <Arduino.h>
+#include <tinyNeoPixel.h>
 
-// Which pin on the Arduino is connected to the NeoPixels?
-#define PIN            A6
+#define NUMLEDS 8
 
-// How many NeoPixels are attached to the Arduino?
-#define NUMPIXELS      8
+tinyNeoPixel leds = tinyNeoPixel(NUMLEDS, PIN_PA6, NEO_GRB);
 
-// When we setup the NeoPixel library, we tell it how many pixels, and which pin to use to send signals.
-// Note that for older NeoPixel strips you might need to change the third parameter--see the strandtest
-// example for more information on possible values.
-// tinyNeoPixel pixels = tinyNeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-
-int delayval = 500; // delay for half a second
-
-void setup() {
-
-  // pixels.begin(); // This initializes the NeoPixel library.
-  pinMode(A1, OUTPUT);
-  pinMode(A2, OUTPUT);
-  // pinMode(A2, OUTPUT);
-
-  // analogWrite(A1, 500);
-  // analogWrite(A6, 100);
-  // analogWrite(A7, 150);
-  // digitalWrite(A7, HIGH);
-  // digitalWrite(A3, HIGH);
-  // digitalWrite(A1, HIGH);
-}
-
-void loop() {
-
-
-  // For a set of NeoPixels the first NeoPixel is 0, second is 1, all the way up to the count of pixels minus one.
-  // pixels.setBrightness(20);
-  // pixels.show();
-  // for(int i=0;i<4;i++){
-
-  //   // pixels.Color takes RGB values, from 0,0,0 up to 255,255,255
-  //   pixels.setPixelColor(i, pixels.Color(251,72,196)); // Moderately bright green color.
-  //   pixels.setPixelColor(i+4, pixels.Color(63,255,33)); // Moderately bright green color.
-
-  //   pixels.show(); // This sends the updated pixel color to the hardware.
-
-  //   delay(delayval); // Delay for a period of time (in milliseconds).
-
-  // }
-  
-  while (1) {
-    // delay(1000);
-    // digitalWrite(A6, LOW);
-    // delay(1000);
-    // digitalWrite(A6, HIGH);
-
-    // fade pin a1 up and down
-    for (int i = 0; i < 255; i++) {
-      analogWrite(A1, i);
-      delay(10);
-    }
-    analogWrite(A1, 0);
-
-    for (int i = 0; i < 255; i++) {
-      analogWrite(A2, i);
-      delay(10);
-    }
-    analogWrite(A2, 0);
-
-
+void analogWriteWO0(uint8_t duty) {
+  if (duty == 0) {
+    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_LCMP0EN_bm; // Turn off PWM if passed   0 duty cycle
+    /* you probably also want to digitalWrite() or digitalWriteFast() the pin LOW */
+  } else if (duty == 255) {
+    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_LCMP0EN_bm; // Turn off PWM if passed 255 duty cycle
+    /* you probably also want to digitalWrite() or digitalWriteFast() the pin HIGH */
+  } else {
+    TCA0.SPLIT.LCMP0  =  duty;                 // Turn set the duty cycle for WO0
+    TCA0.SPLIT.CTRLB |=  TCA_SPLIT_LCMP0EN_bm; // Turn on PWM
   }
 }
-#else //neopixel library required 7.37MHz minimum clock speed; these and following lines are used to skip this sketch in internal testing. It is not needed in your sketches.
-#warning "Neopixel control requires F_CPU > 7.37MHz"
-void setup() {}
-void loop() {}
-#endif
+
+void analogWriteWO1(uint8_t duty) {
+  if (duty == 0) {
+    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_LCMP1EN_bm; // Turn off PWM if passed   0 duty cycle
+    /* you probably also want to digitalWrite() or digitalWriteFast() the pin LOW */
+  } else if (duty == 255) {
+    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_LCMP1EN_bm; // Turn off PWM if passed 255 duty cycle
+    /* you probably also want to digitalWrite() or digitalWriteFast() the pin HIGH */
+  } else {
+    TCA0.SPLIT.LCMP1  =  duty;                 // Turn set the duty cycle for WO1
+    TCA0.SPLIT.CTRLB |=  TCA_SPLIT_LCMP1EN_bm; // Turn on PWM
+  }
+}
+
+void analogWriteWO2(uint8_t duty) {
+  if (duty == 0) {
+    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_LCMP2EN_bm; // Turn off PWM if passed   0 duty cycle
+    /* you probably also want to digitalWrite() or digitalWriteFast() the pin LOW */
+  } else if (duty == 255) {
+    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_LCMP2EN_bm; // Turn off PWM if passed 255 duty cycle
+    /* you probably also want to digitalWrite() or digitalWriteFast() the pin HIGH */
+  } else {
+    TCA0.SPLIT.LCMP2  =  duty;                 // Turn set the duty cycle for WO2
+    TCA0.SPLIT.CTRLB |=  TCA_SPLIT_LCMP2EN_bm; // Turn on PWM
+  }
+}
+// For WO3 and up, they use the high bytes of the CMPn registers
+void analogWriteWO3(uint8_t duty) {
+  if (duty == 0) {
+    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP0EN_bm; // Turn off PWM if passed   0 duty cycle
+    /* you probably also want to digitalWrite() or digitalWriteFast() the pin LOW */
+  } else if (duty == 255) {
+    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP0EN_bm; // Turn off PWM if passed 255 duty cycle
+    /* you probably also want to digitalWrite() or digitalWriteFast() the pin HIGH */
+  } else {
+    TCA0.SPLIT.HCMP0  =  duty;                 // Turn set the duty cycle for WO3
+    TCA0.SPLIT.CTRLB |=  TCA_SPLIT_HCMP0EN_bm; // Turn on PWM
+  }
+}
+
+void analogWriteWO4(uint8_t duty) {
+  if (duty == 0) {
+    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP1EN_bm; // Turn off PWM if passed   0 duty cycle
+    /* you probably also want to digitalWrite() or digitalWriteFast() the pin LOW */
+  } else if (duty == 255) {
+    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP1EN_bm; // Turn off PWM if passed 255 duty cycle
+    /* you probably also want to digitalWrite() or digitalWriteFast() the pin HIGH */
+  } else {
+    TCA0.SPLIT.HCMP1  =  duty;                 // Turn set the duty cycle for WO4
+    TCA0.SPLIT.CTRLB |=  TCA_SPLIT_HCMP1EN_bm; // Turn on PWM
+  }
+}
+
+void analogWriteWO5(uint8_t duty) {
+  if (duty == 0) {
+    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP2EN_bm; // Turn off PWM if passed   0 duty cycle
+    /* you probably also want to digitalWrite() or digitalWriteFast() the pin LOW */
+  } else if (duty == 255) {
+    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP2EN_bm; // Turn off PWM if passed 255 duty cycle
+    /* you probably also want to digitalWrite() or digitalWriteFast() the pin HIGH */
+  } else {
+    TCA0.SPLIT.HCMP2  =  duty;                 // Turn set the duty cycle for WO5
+    TCA0.SPLIT.CTRLB |=  TCA_SPLIT_HCMP2EN_bm; // Turn on PWM
+  }
+}
 
 
-// -----------------------------------------------------
+void setup() {
+  takeOverTCA0(); // take over TCA0 so digitalWrite() on alt pins won't mess up alternate pin PWM output.
+  TCA0.SINGLE.CTRLD = 1;    // Enable split mode.
+  TCA0.SPLIT.LPER   = 254;  // or as required by your application. If 0 and 255 turn PWM off, you want to count to 254 not 255.
+  TCA0.SPLIT.HPER   = 254;
+  TCA0.SPLIT.CTRLA  = TCA_SPLIT_CLKSEL_DIV64_gc | TCA_SPLIT_ENABLE_bm; // same as the core configures by default
+  PORTMUX.CTRLC     = PORTMUX_TCA00_ALTERNATE_gc;  /* 0/1-series - You can OR together as many alternate TCA0 groupcodes as needed */
+  //PORTMUX.TCAROUTEA = PORTMUX_TCA00_ALT1_gc; /* 2-series has different, less stupid, names. */
+  pinMode(A1, OUTPUT);
+  pinMode(A2, OUTPUT);
+  pinMode(A3, OUTPUT);
+  pinMode(A6, OUTPUT);
+  pinMode(A7, OUTPUT);
 
+
+  leds.begin();
+}
+
+// delay by certain amount using nop when the clock speed is 20MHz
+// without using millis
+void asmdelay(unsigned long long ms) {
+  for (unsigned long long i = 0; i < ms; i++) {
+    for (unsigned long long j = 0; j < 2500; j++) { 
+      asm volatile ("nop");
+    }
+  }
+}
+
+
+void loop() {
+  for (uint16_t d = 0; d < 255; d += 5) {
+    analogWriteWO0(d); // A7 - D4
+    analogWriteWO1(d+63); // A1 - D5
+    analogWriteWO2(d+126); // A2 - D1
+    analogWriteWO3(d+189); // A3 - D2
+
+    leds.setBrightness(10);
+    leds.setPixelColor(0, d, 0, 0);
+    leds.setPixelColor(1, d, d, 0);
+    leds.setPixelColor(2, 0, d, 0);
+    leds.setPixelColor(3, 0, d, d);
+    leds.setPixelColor(4, 0, 0, d);
+    leds.setPixelColor(5, d, 0, d);
+    leds.setPixelColor(6, d, 0, 0);
+    leds.setPixelColor(7, d, 0, 0);
+
+    leds.show();
+
+    asmdelay(16);
+  }
+
+  for (uint16_t d = 255; d > 0; d -= 5) {
+    analogWriteWO0(d); // A7 - D4
+    analogWriteWO1(d+63); // A1 - D5
+    analogWriteWO2(d+126); // A2 - D1
+    analogWriteWO3(d+189); // A3 - D2
+
+    leds.setBrightness(10);
+    leds.setPixelColor(0, d, 0, 0);
+    leds.setPixelColor(1, d, d, 0);
+    leds.setPixelColor(2, 0, d, 0);
+    leds.setPixelColor(3, 0, d, d);
+    leds.setPixelColor(4, 0, 0, d);
+    leds.setPixelColor(5, d, 0, d);
+    leds.setPixelColor(6, d, 0, 0);
+    leds.setPixelColor(7, d, 0, 0);
+
+    leds.show();
+
+    asmdelay(16);
+  }
+
+  
+}
