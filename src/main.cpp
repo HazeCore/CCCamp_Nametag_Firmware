@@ -3,9 +3,17 @@
 
 #define NUMLEDS 8
 
-tinyNeoPixel leds = tinyNeoPixel(NUMLEDS, PIN_PA6, NEO_GRB);
+tinyNeoPixel leds = tinyNeoPixel(NUMLEDS, PIN_PA3, NEO_GRB);
 
-void analogWriteWO0(uint8_t duty) {
+// Pinout:
+
+// A6 - WS2812B
+// A7 PWM
+// A1 PWM
+// A2 PWM
+
+// WO0 equals A7 in this configuration
+void analogWriteBlue(uint8_t duty) {
   if (duty == 0) {
     TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_LCMP0EN_bm; // Turn off PWM if passed   0 duty cycle
     /* you probably also want to digitalWrite() or digitalWriteFast() the pin LOW */
@@ -18,7 +26,8 @@ void analogWriteWO0(uint8_t duty) {
   }
 }
 
-void analogWriteWO1(uint8_t duty) {
+// WO1 equals A1 in this configuration
+void analogWriteGreen(uint8_t duty) {
   if (duty == 0) {
     TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_LCMP1EN_bm; // Turn off PWM if passed   0 duty cycle
     /* you probably also want to digitalWrite() or digitalWriteFast() the pin LOW */
@@ -31,7 +40,8 @@ void analogWriteWO1(uint8_t duty) {
   }
 }
 
-void analogWriteWO2(uint8_t duty) {
+// WO2 equals A2 in this configuration
+void analogWriteRed(uint8_t duty) {
   if (duty == 0) {
     TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_LCMP2EN_bm; // Turn off PWM if passed   0 duty cycle
     /* you probably also want to digitalWrite() or digitalWriteFast() the pin LOW */
@@ -43,45 +53,22 @@ void analogWriteWO2(uint8_t duty) {
     TCA0.SPLIT.CTRLB |=  TCA_SPLIT_LCMP2EN_bm; // Turn on PWM
   }
 }
-// For WO3 and up, they use the high bytes of the CMPn registers
-void analogWriteWO3(uint8_t duty) {
-  if (duty == 0) {
-    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP0EN_bm; // Turn off PWM if passed   0 duty cycle
-    /* you probably also want to digitalWrite() or digitalWriteFast() the pin LOW */
-  } else if (duty == 255) {
-    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP0EN_bm; // Turn off PWM if passed 255 duty cycle
-    /* you probably also want to digitalWrite() or digitalWriteFast() the pin HIGH */
-  } else {
-    TCA0.SPLIT.HCMP0  =  duty;                 // Turn set the duty cycle for WO3
-    TCA0.SPLIT.CTRLB |=  TCA_SPLIT_HCMP0EN_bm; // Turn on PWM
-  }
-}
 
-void analogWriteWO4(uint8_t duty) {
-  if (duty == 0) {
-    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP1EN_bm; // Turn off PWM if passed   0 duty cycle
-    /* you probably also want to digitalWrite() or digitalWriteFast() the pin LOW */
-  } else if (duty == 255) {
-    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP1EN_bm; // Turn off PWM if passed 255 duty cycle
-    /* you probably also want to digitalWrite() or digitalWriteFast() the pin HIGH */
-  } else {
-    TCA0.SPLIT.HCMP1  =  duty;                 // Turn set the duty cycle for WO4
-    TCA0.SPLIT.CTRLB |=  TCA_SPLIT_HCMP1EN_bm; // Turn on PWM
-  }
-}
+// // For WO3 and up, they use the high bytes of the CMPn registers
+// // WO3 equals A3 in this configuration
+// void analogWriteWO3(uint8_t duty) {
+//   if (duty == 0) {
+//     TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP0EN_bm; // Turn off PWM if passed   0 duty cycle
+//     /* you probably also want to digitalWrite() or digitalWriteFast() the pin LOW */
+//   } else if (duty == 255) {
+//     TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP0EN_bm; // Turn off PWM if passed 255 duty cycle
+//     /* you probably also want to digitalWrite() or digitalWriteFast() the pin HIGH */
+//   } else {
+//     TCA0.SPLIT.HCMP0  =  duty;                 // Turn set the duty cycle for WO3
+//     TCA0.SPLIT.CTRLB |=  TCA_SPLIT_HCMP0EN_bm; // Turn on PWM
+//   }
+// }
 
-void analogWriteWO5(uint8_t duty) {
-  if (duty == 0) {
-    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP2EN_bm; // Turn off PWM if passed   0 duty cycle
-    /* you probably also want to digitalWrite() or digitalWriteFast() the pin LOW */
-  } else if (duty == 255) {
-    TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_HCMP2EN_bm; // Turn off PWM if passed 255 duty cycle
-    /* you probably also want to digitalWrite() or digitalWriteFast() the pin HIGH */
-  } else {
-    TCA0.SPLIT.HCMP2  =  duty;                 // Turn set the duty cycle for WO5
-    TCA0.SPLIT.CTRLB |=  TCA_SPLIT_HCMP2EN_bm; // Turn on PWM
-  }
-}
 
 
 void setup() {
@@ -114,11 +101,11 @@ void asmdelay(unsigned long long ms) {
 
 
 void loop() {
-  for (uint16_t d = 0; d < 255; d += 5) {
-    analogWriteWO0(d); // A7 - D4
-    analogWriteWO1(d+63); // A1 - D5
-    analogWriteWO2(d+126); // A2 - D1
-    analogWriteWO3(d+189); // A3 - D2
+  for (uint16_t d = 0; d < 255; d += 1) {
+    analogWriteBlue(d); // A7 - D4
+    analogWriteGreen(d); // A1 - D5
+    analogWriteRed(d); // A2 - D1
+    // analogWriteWO3(d+189); // A3 - D2
 
     leds.setBrightness(10);
     leds.setPixelColor(0, d, 0, 0);
@@ -132,14 +119,14 @@ void loop() {
 
     leds.show();
 
-    asmdelay(16);
+    asmdelay(3);
   }
 
-  for (uint16_t d = 255; d > 0; d -= 5) {
-    analogWriteWO0(d); // A7 - D4
-    analogWriteWO1(d+63); // A1 - D5
-    analogWriteWO2(d+126); // A2 - D1
-    analogWriteWO3(d+189); // A3 - D2
+  for (uint16_t d = 255; d > 0; d -= 1) {
+    analogWriteBlue(d); // A7 - D5
+    analogWriteGreen(d); // A1 - D4
+    analogWriteRed(d); // A2 - D3
+    // analogWriteWO3(d+189); // A3 - D2
 
     leds.setBrightness(10);
     leds.setPixelColor(0, d, 0, 0);
@@ -153,7 +140,7 @@ void loop() {
 
     leds.show();
 
-    asmdelay(16);
+    asmdelay(3);
   }
 
   
