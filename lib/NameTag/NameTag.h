@@ -13,4 +13,5 @@ namespace NameTag {
     void setRed(uint8_t);
     void setGreen(uint8_t);
     void setBlue(uint8_t);
+    void setPanelColor(uint32_t);
 }

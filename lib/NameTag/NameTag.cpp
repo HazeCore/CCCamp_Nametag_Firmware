@@ -95,3 +95,9 @@ void NameTag::setRed(uint8_t duty) {
         TCA0.SPLIT.CTRLB |= TCA_SPLIT_LCMP2EN_bm;  // Turn on PWM
     }
 }
+
+void NameTag::setPanelColor(uint32_t color) {
+    setRed(color >> 16);
+    setGreen(color >> 8);
+    setBlue(color);
+}
