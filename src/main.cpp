@@ -11,7 +11,7 @@ using namespace NameTag;
 const unsigned int TARGET_DELTA_TIME = 33;
 const unsigned int ANIMATION_COUNT = 2;
 unsigned long startTime = 0;
-void (*animations[ANIMATION_COUNT])(unsigned long);
+void (*animations[ANIMATION_COUNT])(unsigned long) = {updateRainbow, updateTwinkle};
 size_t currentAnimation = 0;
 static unsigned long animationStart = 0;
 
@@ -19,9 +19,6 @@ void checkButton();
 
 void setup() {
     NameTag::setup();
-
-    animations[0] = updateRainbow;
-    animations[1] = updateTwinkle;
     
     setBrightness(getBrightness());
 }
