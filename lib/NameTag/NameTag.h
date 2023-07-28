@@ -7,9 +7,11 @@ namespace NameTag {
     extern tinyNeoPixel leds;
 
     void setup();
-    // void delay(unsigned long long ms);
+    void custom_delay(unsigned long long ms);
     void waitRTC();
     void waitPIT();
+    uint8_t getBrightness();
+    void setBrightness(uint8_t);
     void setRed(uint8_t);
     void setGreen(uint8_t);
     void setBlue(uint8_t);

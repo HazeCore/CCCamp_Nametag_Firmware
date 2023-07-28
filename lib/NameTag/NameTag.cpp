@@ -1,5 +1,6 @@
 
 #include "NameTag.h"
+#include "lib8tion.h"
 
 using namespace NameTag;
 
@@ -7,6 +8,7 @@ using namespace NameTag;
 
 byte pixels[8 * 3];
 tinyNeoPixel NameTag::leds = tinyNeoPixel(NUMLEDS, PIN_PA3, NEO_GRB, pixels);
+uint8_t brightness = 255;
 
 void NameTag::setup() {
     takeOverTCA0(); // take over TCA0 so digitalWrite() on alt pins won't mess up alternate pin PWM output.
@@ -16,27 +18,29 @@ void NameTag::setup() {
     TCA0.SPLIT.CTRLA  = TCA_SPLIT_CLKSEL_DIV64_gc | TCA_SPLIT_ENABLE_bm; // same as the core configures by default
     PORTMUX.CTRLC     = PORTMUX_TCA00_ALTERNATE_gc;  /* 0/1-series - You can OR together as many alternate TCA0 groupcodes as needed */
     //PORTMUX.TCAROUTEA = PORTMUX_TCA00_ALT1_gc; /* 2-series has different, less stupid, names. */
-    pinMode(PIN_PA3, OUTPUT);
-    pinMode(A1, OUTPUT);
-    pinMode(A2, OUTPUT);
-    pinMode(A3, OUTPUT);
-    pinMode(A6, OUTPUT);
-    pinMode(A7, OUTPUT);
+    pinModeFast(PIN_PA0, OUTPUT);
+    pinModeFast(PIN_PA1, OUTPUT);
+    pinModeFast(PIN_PA2, OUTPUT);
+    pinModeFast(PIN_PA3, OUTPUT);
+    pinModeFast(PIN_PA6, INPUT_PULLUP);
+    pinModeFast(PIN_PA7, OUTPUT);
 
     ADC0.CTRLA = 0; // disable ADC
 
     leds.begin();
+    leds.fill(0);
+    leds.show();
 }
 
 // delay by certain amount using nop when the clock speed is 20MHz
 // without using millis
-// void NameTag::delay(unsigned long long ms) {
-//     for (unsigned long long i = 0; i < ms; i++) {
-//         for (unsigned long long j = 0; j < 2500; j++) {
-//             asm volatile("nop");
-//         }
-//     }
-// }
+void NameTag::custom_delay(unsigned long long ms) {
+    for (unsigned long long i = 0; i < ms; i++) {
+        for (unsigned long long j = 0; j < 2500; j++) {
+            asm volatile("nop");
+        }
+    }
+}
 
 void NameTag::waitRTC() {
     // Wait for all registers to be synchronized
@@ -48,7 +52,18 @@ void NameTag::waitPIT() {
     while (RTC.PITSTATUS > 0) {};
 }
 
+uint8_t NameTag::getBrightness() {
+    return brightness;
+}
+
+void NameTag::setBrightness(uint8_t v) {
+    v = tinyNeoPixel::gamma8(v);
+    leds.setBrightness(v);
+    brightness = v;
+}
+
 void NameTag::setBlue(uint8_t duty) {
+    duty = scale8(duty, brightness);
     // WO0 equals A7 in this configuration
     if (duty == 0) {
         TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_LCMP0EN_bm;  // Turn off PWM if passed   0 duty cycle
@@ -65,6 +80,7 @@ void NameTag::setBlue(uint8_t duty) {
 }
 
 void NameTag::setGreen(uint8_t duty) {
+    duty = scale8(duty, brightness);
     // WO1 equals A1 in this configuration
     if (duty == 0) {
         TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_LCMP1EN_bm;  // Turn off PWM if passed   0 duty cycle
@@ -81,6 +97,7 @@ void NameTag::setGreen(uint8_t duty) {
 }
 
 void NameTag::setRed(uint8_t duty) {
+    duty = scale8(duty, brightness);
     // WO2 equals A2 in this configuration
     if (duty == 0) {
         TCA0.SPLIT.CTRLB &= ~TCA_SPLIT_LCMP2EN_bm;  // Turn off PWM if passed   0 duty cycle
