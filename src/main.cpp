@@ -13,7 +13,7 @@ const unsigned int ANIMATION_COUNT = 2;
 unsigned long startTime = 0;
 void (*animations[ANIMATION_COUNT])(unsigned long) = {updateRainbow, updateTwinkle};
 size_t currentAnimation = 0;
-static unsigned long animationStart = 0;
+static unsigned long lastFrame = 0;
 
 void checkButton();
 
@@ -24,11 +24,13 @@ void setup() {
 }
 
 void loop() {
-    delay(TARGET_DELTA_TIME - (millis() - animationStart));
+    delay(TARGET_DELTA_TIME - (millis() - lastFrame));
 
     checkButton();
 
-    animationStart = millis();
+    animations[currentAnimation](millis() - startTime);
+
+    lastFrame = millis();
 }
 
 void checkButton() {

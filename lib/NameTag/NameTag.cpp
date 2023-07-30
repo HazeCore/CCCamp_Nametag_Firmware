@@ -8,7 +8,7 @@ using namespace NameTag;
 
 byte pixels[8 * 3];
 tinyNeoPixel NameTag::leds = tinyNeoPixel(NUMLEDS, PIN_PA3, NEO_GRB, pixels);
-uint8_t brightness = 255;
+uint8_t brightness = 150;
 
 void NameTag::setup() {
     takeOverTCA0(); // take over TCA0 so digitalWrite() on alt pins won't mess up alternate pin PWM output.
@@ -57,9 +57,9 @@ uint8_t NameTag::getBrightness() {
 }
 
 void NameTag::setBrightness(uint8_t v) {
+    brightness = v;
     v = tinyNeoPixel::gamma8(v);
     leds.setBrightness(v);
-    brightness = v;
 }
 
 void NameTag::setBlue(uint8_t duty) {
