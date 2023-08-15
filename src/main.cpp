@@ -21,14 +21,12 @@ void (*animations[ANIMATION_COUNT])(unsigned long, uint8_t) = {updateRainbow, up
 size_t currentAnimation = 0;
 unsigned long startTime = 0; // time when the animation started
 uint8_t brightness = 64;
+unsigned long internalMillis = 0;
 
 void checkButton();
+unsigned long rough_millis();
 
 void setup() {
-    // Keep the 20Mhz Oscillator running in standby mode
-    CPU_CCP = CCP_IOREG_gc;
-    CLKCTRL.OSC20MCTRLA = CLKCTRL_RUNSTDBY_bm;
-
     NameTag::setup();
     Store::setup();
     
@@ -63,10 +61,7 @@ void setup() {
     }
     Store::setPersonalHue(hue);
 
-    // Keep Timer B running in standby
-    // TCA0.CTRLA |= TCA_RUNSTDBY_bm;
-    TCB0.CTRLA |= TCB_RUNSTDBY_bm;
-
+    // Configure the Periodic Interrupt Timer (PIT) to trigger an interrupt every ~32 ms
     noInterrupts();
     while (RTC.STATUS & RTC_CTRLABUSY_bm) {};
     RTC.CTRLA = RTC_RUNSTDBY_bm | RTC_PRESCALER_DIV1_gc | RTC_RTCEN_bm;
@@ -83,34 +78,36 @@ void setup() {
 volatile bool showFrame = false;
 
 void loop() {
-    // IDLE saves about 2mA
+    // enter IDLE sleep between frames
+    // it saves about 2mA
+    TCB0.INTCTRL = 0; // disable Timer B interrupt (used by millis and delay)
     set_sleep_mode(SLEEP_MODE_IDLE);
     sleep_enable();
     sleep_cpu();
     sleep_disable();
+    TCB0.INTCTRL |= 1; // reenable Timer B interrupt
 
-    if(!showFrame) return;
-    showFrame = false;
+    internalMillis += 32; // increment our own millis timer
 
     checkButton();
 
-    animations[currentAnimation](millis() - startTime, brightness);
+    animations[currentAnimation](rough_millis() - startTime, brightness);
 }
 
 void checkButton() {
     static bool lastBtnState = false; // true = pressed
     static unsigned long lastBtnChange = 0; // time when the last state change occurred
     static unsigned long lastBtnPress = 0; // time when the button was pressed last
-    unsigned long timeSincePress = millis() - lastBtnPress;
+    unsigned long timeSincePress = rough_millis() - lastBtnPress;
 
     bool state = NameTag::isButtonPressed();
-    if (state != lastBtnState && millis() - lastBtnChange > 100) { // debounce
-        lastBtnChange = millis();
+    if (state != lastBtnState && rough_millis() - lastBtnChange > 100) { // debounce
+        lastBtnChange = rough_millis();
         lastBtnState = state;
 
         if (lastBtnState) {
             // update if the button is pressed
-            lastBtnPress = millis();
+            lastBtnPress = rough_millis();
         } else if (timeSincePress < 3000) {
             // the button was released and the press occurred less than 3 seconds ago
             // change the animation
@@ -119,7 +116,7 @@ void checkButton() {
             NameTag::setPanelColor(0);
             NameTag::leds.fill(0);
             NameTag::leds.show();
-            startTime = millis();
+            startTime = rough_millis();
             Store::setAnimation(currentAnimation);
         } else {
             // the button was released and the press occurred more than 3 seconds ago 
@@ -149,7 +146,10 @@ void checkButton() {
     }
 }
 
+unsigned long rough_millis() {
+    return internalMillis;
+}
+
 ISR(RTC_PIT_vect) {
     RTC.PITINTFLAGS = RTC_PI_bm;
-    showFrame = true;
 }
