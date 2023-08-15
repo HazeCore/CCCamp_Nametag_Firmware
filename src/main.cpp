@@ -54,7 +54,7 @@ void setup() {
         currentAnimation = 3; // index of the static color animation
     }
     while (NameTag::isButtonPressed()) {
-        updateStaticColorPanel(0, 255, hue);
+        NameTag::setPanelColor(NameTag::gammaHSV(hue*256, 255));
         hue += 1;
 
         delay(30);
