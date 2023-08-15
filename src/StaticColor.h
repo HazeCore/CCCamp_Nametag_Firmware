@@ -7,7 +7,7 @@
 void updateStaticColorPanel(unsigned long time, uint8_t brightness, uint8_t hue) {
     using namespace NameTag;
 
-    setPanelColor(tinyNeoPixel::gamma32(tinyNeoPixel::ColorHSV(hue*256, 255, brightness)));
+    setPanelColor(gammaHSV(hue*256, brightness+20));
 }
 
 void updateStaticColorPanel(unsigned long time, uint8_t brightness) {
@@ -19,8 +19,8 @@ void updateStaticColorPanel(unsigned long time, uint8_t brightness) {
 void updateStaticColorAll(unsigned long time, uint8_t brightness, uint8_t hue) {
     using namespace NameTag;
 
-    setPanelColor(tinyNeoPixel::gamma32(tinyNeoPixel::ColorHSV(hue*256, 255, max(brightness, 25))));
-    leds.fill(tinyNeoPixel::gamma32(tinyNeoPixel::ColorHSV(hue*256, 255, max(scale8(brightness, 200), 25))));
+    setPanelColor(gammaHSV(hue*256, brightness+20));
+    leds.fill(gammaHSV(hue*256, scale8(brightness+10, 200)));
     leds.show();
 }
 

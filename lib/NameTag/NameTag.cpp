@@ -104,3 +104,7 @@ void NameTag::setPanelColor(uint32_t color, uint8_t brightness) {
     setGreen(g);
     setBlue(b);
 }
+
+uint32_t NameTag::gammaHSV(uint16_t hue, uint8_t brightness) {
+    return tinyNeoPixel::gamma32(tinyNeoPixel::ColorHSV(hue, 255, max(brightness, 25)));
+}

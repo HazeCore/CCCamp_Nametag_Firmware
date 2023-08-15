@@ -27,7 +27,7 @@ void updatePixel(unsigned long time, uint8_t brightness) {
         // inlining the map formula and cancelling out the zeros is actually larger that just using map
         fract8 p = map(ledTime, 0, duration, 0, 255);
         uint8_t v = cos8(p + 127);
-        v = scale8(v, max(brightness-20, 20));
+        v = scale8(v, brightness >> 2);
         uint8_t d = scale8(v, 150);
         leds.setPixelColor(i, v, d, d);
     }
@@ -45,7 +45,7 @@ void updatePanel(unsigned long time, uint8_t brightness) {
     uint8_t v = sin8(progress);
     // change the sine from a range of 0 to 255 to 50 to 255
     v = scale8(v, 205) + 50;
-    v = scale8(v, brightness+5);
+    v = scale8(v, brightness);
     setBlue(v);
     setRed(scale8(v, 150)); // red at a slightly lower brightness
 };

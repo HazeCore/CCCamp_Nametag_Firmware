@@ -15,7 +15,7 @@
 // Be careful when adjusting these, simply setting the maximum and minimum brightness to 255 and 0 respectively doesn't work
 // as some animations add and subtract constant values which would then result in over- or underflows.
 const uint8_t MAX_BRIGHTNESS = 127;
-const uint8_t MIN_BRIGHTNESS = 20;
+const uint8_t MIN_BRIGHTNESS = 30;
 const unsigned int ANIMATION_COUNT = 5;
 void (*animations[ANIMATION_COUNT])(unsigned long, uint8_t) = {updateRainbow, updateTwinkle, updateCamp, updateStaticColorPanel, updateStaticColorAll};
 size_t currentAnimation = 0;
@@ -49,7 +49,7 @@ void setup() {
     currentAnimation = anim;
 
     brightness = Store::getBrightness();
-    if (brightness <= MIN_BRIGHTNESS || brightness >= MAX_BRIGHTNESS) brightness = 127;
+    if (brightness <= MIN_BRIGHTNESS || brightness >= MAX_BRIGHTNESS) brightness = 64;
 
     uint8_t hue = Store::getPersonalHue();
     if (NameTag::isButtonPressed()) {
