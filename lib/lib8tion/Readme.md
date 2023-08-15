@@ -3,7 +3,7 @@
 The lib8tion library provides a lot of useful math functions.
 It was copied from the FastLED library with slight modifications to work standalone.
 
-Documentation can be found on the [FastLED Website.](http://fastled.io/docs/group__lib8tion.html)
+Documentation can be found on the [FastLED Website](http://fastled.io/docs/group__lib8tion.html).
 
 
 The original FastLED license follows:
